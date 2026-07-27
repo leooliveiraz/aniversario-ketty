@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import {
   Gift,
   Search,
   QrCode,
+  X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 export interface GiftItem {
@@ -39,6 +42,9 @@ export const GiftRegistry: React.FC<GiftRegistryProps> = ({
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [searchQuery, setSearchQuery] = useState("");
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  const handleCloseLightbox = useCallback(() => setLightboxIndex(null), []);
 
   const categories = ["Todos", "Bolsas", "Acessórios", "Maquiagem", "Perfumes", "Skin Care", "Unha", "Arte & Hobby"];
 
@@ -91,6 +97,29 @@ export const GiftRegistry: React.FC<GiftRegistryProps> = ({
       (gift.description && gift.description.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
+
+  const handlePrev = useCallback(() => {
+    setLightboxIndex((prev) =>
+      prev !== null ? (prev - 1 + filteredGifts.length) % filteredGifts.length : null
+    );
+  }, [filteredGifts.length]);
+
+  const handleNext = useCallback(() => {
+    setLightboxIndex((prev) =>
+      prev !== null ? (prev + 1) % filteredGifts.length : null
+    );
+  }, [filteredGifts.length]);
+
+  useEffect(() => {
+    if (lightboxIndex === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") handleCloseLightbox();
+      if (e.key === "ArrowLeft") handlePrev();
+      if (e.key === "ArrowRight") handleNext();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [lightboxIndex, handleCloseLightbox, handlePrev, handleNext]);
 
   return (
     <section id="presentes" className="py-20 px-4 bg-[#1a060b] relative">
@@ -196,19 +225,24 @@ export const GiftRegistry: React.FC<GiftRegistryProps> = ({
                   {/* Category & Badge header */}
                   <div className="relative h-48 w-full overflow-hidden bg-black/40">
                     {gift.imageUrl ? (
-                      <img
-                        src={gift.imageUrl}
-                        alt={gift.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
+                      <button
+                        onClick={() => setLightboxIndex(filteredGifts.indexOf(gift))}
+                        className="w-full h-full cursor-pointer"
+                      >
+                        <img
+                          src={gift.imageUrl}
+                          alt={gift.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </button>
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#400B12] to-[#1a060b]">
                         <Gift className="w-16 h-16 text-[#D4AF37]/40" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a060b] via-transparent to-black/30"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a060b] via-transparent to-black/30 pointer-events-none"></div>
 
-                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#1a060b]/80 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] uppercase font-bold text-amber-300">
+                    <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-[#1a060b]/80 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] uppercase font-bold text-amber-300 pointer-events-none">
                       {gift.category}
                     </span>
                   </div>
@@ -242,6 +276,62 @@ export const GiftRegistry: React.FC<GiftRegistryProps> = ({
         )}
       </div>
 
+      {/* Lightbox Carousel */}
+      {lightboxIndex !== null && filteredGifts[lightboxIndex]?.imageUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fadeIn p-4"
+          onClick={handleCloseLightbox}
+        >
+          <button
+            onClick={handleCloseLightbox}
+            className="absolute top-4 right-4 text-rose-200 hover:text-white p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer z-10"
+          >
+            <X className="w-8 h-8" />
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-200 hover:text-[#D4AF37] p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <ChevronLeft className="w-10 h-10" />
+          </button>
+
+          <div onClick={(e) => e.stopPropagation()} className="max-w-4xl max-h-[90vh] flex flex-col items-center gap-4">
+            <img
+              src={filteredGifts[lightboxIndex].imageUrl}
+              alt={filteredGifts[lightboxIndex].title}
+              className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
+            />
+            <div className="text-center">
+              <h3 className="text-lg font-serif font-bold text-gold-gradient">
+                {filteredGifts[lightboxIndex].title}
+              </h3>
+              <span className="text-xs text-rose-300 uppercase tracking-wider">
+                {filteredGifts[lightboxIndex].category}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); handleNext(); }}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-rose-200 hover:text-[#D4AF37] p-2 rounded-full hover:bg-white/10 transition-colors cursor-pointer"
+          >
+            <ChevronRight className="w-10 h-10" />
+          </button>
+
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
+            {filteredGifts.map((_, i) => (
+              <button
+                key={i}
+                onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
+                className={`w-2 h-2 rounded-full transition-all cursor-pointer ${
+                  i === lightboxIndex ? "bg-[#D4AF37] w-4" : "bg-rose-700 hover:bg-rose-500"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

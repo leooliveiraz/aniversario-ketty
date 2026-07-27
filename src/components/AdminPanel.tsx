@@ -90,8 +90,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showDietaryNotes, setShowDietaryNotes] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  // Add Gift Form
+  // Add / Edit Gift Form
   const [showAddGift, setShowAddGift] = useState(false);
+  const [editingGiftId, setEditingGiftId] = useState<number | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newCategory, setNewCategory] = useState("Presentes");
@@ -199,25 +200,46 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setGiftsList(giftsList.filter((g) => g.id !== id));
   };
 
+  const handleStartEditGift = (g: GiftItem) => {
+    setEditingGiftId(g.id);
+    setNewTitle(g.title);
+    setNewDesc(g.description);
+    setNewCategory(g.category);
+    setNewPrice(g.price);
+    setNewImage(g.imageUrl);
+    setNewIsQuota(g.isQuota);
+    setShowAddGift(true);
+  };
+
+  const handleCancelGiftForm = () => {
+    setShowAddGift(false);
+    setEditingGiftId(null);
+    setNewTitle("");
+    setNewDesc("");
+    setNewPrice("");
+    setNewImage("");
+    setNewIsQuota(false);
+  };
+
   const handleCreateGift = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle) return;
 
-    const { error } = await supabase.from("gifts").insert({
+    const payload = {
       title: newTitle,
       description: newDesc,
       category: newCategory,
       price: newPrice,
       image_url: newImage,
       is_quota: newIsQuota,
-    });
+    };
+
+    const { error } = editingGiftId
+      ? await supabase.from("gifts").update(payload).eq("id", editingGiftId)
+      : await supabase.from("gifts").insert(payload);
 
     if (!error) {
-      setShowAddGift(false);
-      setNewTitle("");
-      setNewDesc("");
-      setNewPrice("");
-      setNewImage("");
+      handleCancelGiftForm();
       loadAdminData();
     }
   };
@@ -561,14 +583,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     </button>
                   </div>
 
-                  {/* Add Gift Sub-Form */}
+                  {/* Add / Edit Gift Sub-Form */}
                   {showAddGift && (
                     <form
                       onSubmit={handleCreateGift}
                       className="p-4 rounded-2xl bg-[#1a060b] border border-[#D4AF37] space-y-3"
                     >
                       <h5 className="text-xs font-bold text-[#D4AF37] uppercase">
-                        Novo Item de Presente
+                        {editingGiftId ? "Editar Presente" : "Novo Item de Presente"}
                       </h5>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <input
@@ -601,7 +623,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <option value="Arte & Hobby">Arte & Hobby</option>
                         </select>
                         <input
-                          type="url"
+                          type="text"
                           placeholder="URL da Foto do Presente"
                           value={newImage}
                           onChange={(e) => setNewImage(e.target.value)}
@@ -629,7 +651,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       <div className="flex gap-2 justify-end">
                         <button
                           type="button"
-                          onClick={() => setShowAddGift(false)}
+                          onClick={handleCancelGiftForm}
                           className="px-3 py-1.5 text-xs text-rose-300 hover:text-white"
                         >
                           Cancelar
@@ -638,7 +660,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           type="submit"
                           className="px-4 py-1.5 bg-[#58111a] text-amber-200 text-xs font-bold uppercase rounded-lg border border-[#D4AF37]"
                         >
-                          Salvar Presente
+                          {editingGiftId ? "Atualizar Presente" : "Salvar Presente"}
                         </button>
                       </div>
                     </form>
@@ -670,12 +692,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           </div>
                         </div>
 
-                        <button
-                          onClick={() => handleDeleteGift(g.id)}
-                          className="text-rose-400 hover:text-rose-200 p-1"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleStartEditGift(g)}
+                            className="text-amber-400 hover:text-amber-200 p-1"
+                            title="Editar"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGift(g.id)}
+                            className="text-rose-400 hover:text-rose-200 p-1"
+                            title="Excluir"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
