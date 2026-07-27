@@ -235,7 +235,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     };
 
     const { error } = editingGiftId
-      ? await supabase.from("gifts").update(payload).eq("id", editingGiftId)
+      ? await supabase.from("gifts").upsert({ id: editingGiftId, ...payload })
       : await supabase.from("gifts").insert(payload);
 
     if (!error) {
