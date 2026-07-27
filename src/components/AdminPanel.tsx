@@ -86,6 +86,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [pixName, setPixName] = useState("");
   const [pixCity, setPixCity] = useState("");
   const [welcomeMessage, setWelcomeMessage] = useState("");
+  const [showSongRequest, setShowSongRequest] = useState(true);
+  const [showDietaryNotes, setShowDietaryNotes] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Add Gift Form
@@ -169,6 +171,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setPixName(ev.pix_name || "");
         setPixCity(ev.pix_city || "");
         setWelcomeMessage(ev.welcome_message || "");
+        setShowSongRequest(ev.show_song_request ?? true);
+        setShowDietaryNotes(ev.show_dietary_notes ?? true);
       }
     } catch (err) {
       console.error(err);
@@ -237,6 +241,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         pix_name: pixName,
         pix_city: pixCity,
         welcome_message: welcomeMessage,
+        show_song_request: showSongRequest,
+        show_dietary_notes: showDietaryNotes,
         updated_at: new Date().toISOString(),
       })
       .eq("id", 1);
@@ -768,6 +774,45 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onChange={(e) => setWelcomeMessage(e.target.value)}
                       className="w-full bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-3 py-2 text-xs text-rose-100"
                     />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#1a060b] border border-[#D4AF37]/30 space-y-4">
+                    <h4 className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">
+                      Configurações do Formulário de Presença
+                    </h4>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <div
+                          onClick={() => setShowSongRequest(!showSongRequest)}
+                          className={`w-10 h-5 rounded-full transition-colors relative ${
+                            showSongRequest ? "bg-emerald-600" : "bg-rose-800"
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${
+                              showSongRequest ? "left-[22px]" : "left-0.5"
+                            }`}
+                          />
+                        </div>
+                        <span className="text-xs text-rose-200">Exibir campo "Pedido de Música"</span>
+                      </label>
+
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <div
+                          onClick={() => setShowDietaryNotes(!showDietaryNotes)}
+                          className={`w-10 h-5 rounded-full transition-colors relative ${
+                            showDietaryNotes ? "bg-emerald-600" : "bg-rose-800"
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${
+                              showDietaryNotes ? "left-[22px]" : "left-0.5"
+                            }`}
+                          />
+                        </div>
+                        <span className="text-xs text-rose-200">Exibir campo "Restrição Alimentar"</span>
+                      </label>
+                    </div>
                   </div>
 
                   {saveSuccess && (

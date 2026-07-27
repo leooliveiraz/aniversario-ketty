@@ -25,6 +25,8 @@ interface RsvpFormProps {
   eventDate: string;
   venueName: string;
   venueAddress: string;
+  showSongRequest?: boolean;
+  showDietaryNotes?: boolean;
   isOpenModal?: boolean;
   onCloseModal?: () => void;
 }
@@ -34,6 +36,8 @@ export const RsvpForm: React.FC<RsvpFormProps> = ({
   eventDate,
   venueName,
   venueAddress,
+  showSongRequest = true,
+  showDietaryNotes = true,
 }) => {
   const [guestName, setGuestName] = useState("");
   const [email, setEmail] = useState("");
@@ -417,36 +421,41 @@ export const RsvpForm: React.FC<RsvpFormProps> = ({
                   </div>
                 </div>
 
-                {/* Optional Notes & Song Request */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-medium text-rose-200 flex items-center gap-1.5">
-                      <UtensilsCrossed className="w-3.5 h-3.5 text-[#D4AF37]" /> Restrição
-                      Alimentar / Alergias
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Ex: Vegetariano, Sem Glúten..."
-                      value={dietaryNotes}
-                      onChange={(e) => setDietaryNotes(e.target.value)}
-                      className="w-full bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-4 py-2.5 text-sm text-rose-100 focus:outline-none focus:border-[#D4AF37]"
-                    />
-                  </div>
+                {(showDietaryNotes || showSongRequest) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {showDietaryNotes && (
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-rose-200 flex items-center gap-1.5">
+                          <UtensilsCrossed className="w-3.5 h-3.5 text-[#D4AF37]" /> Restrição
+                          Alimentar / Alergias
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Ex: Vegetariano, Sem Glúten..."
+                          value={dietaryNotes}
+                          onChange={(e) => setDietaryNotes(e.target.value)}
+                          className="w-full bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-4 py-2.5 text-sm text-rose-100 focus:outline-none focus:border-[#D4AF37]"
+                        />
+                      </div>
+                    )}
 
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-medium text-rose-200 flex items-center gap-1.5">
-                      <Music2 className="w-3.5 h-3.5 text-[#D4AF37]" /> Pedido de Música para o
-                      DJ
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Qual música não pode faltar na pista?"
-                      value={songRequest}
-                      onChange={(e) => setSongRequest(e.target.value)}
-                      className="w-full bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-4 py-2.5 text-sm text-rose-100 focus:outline-none focus:border-[#D4AF37]"
-                    />
+                    {showSongRequest && (
+                      <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-rose-200 flex items-center gap-1.5">
+                          <Music2 className="w-3.5 h-3.5 text-[#D4AF37]" /> Pedido de Música para o
+                          DJ
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Qual música não pode faltar na pista?"
+                          value={songRequest}
+                          onChange={(e) => setSongRequest(e.target.value)}
+                          className="w-full bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-4 py-2.5 text-sm text-rose-100 focus:outline-none focus:border-[#D4AF37]"
+                        />
+                      </div>
+                    )}
                   </div>
-                </div>
+                )}
               </>
             )}
 

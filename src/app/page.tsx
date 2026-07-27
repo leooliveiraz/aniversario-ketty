@@ -27,6 +27,8 @@ const defaultEventData = {
   pixName: "Ketty (15 Anos)",
   pixCity: "São Paulo",
   welcomeMessage: "É com imenso carinho e alegria que convido você para compartilhar comigo a celebração mágica do meu aniversário de 15 anos em um misterioso e inesquecível Baile de Máscaras!",
+  showSongRequest: true,
+  showDietaryNotes: true,
 };
 
 export default function HomePage() {
@@ -51,6 +53,8 @@ export default function HomePage() {
         pixName: data.pix_name,
         pixCity: data.pix_city,
         welcomeMessage: data.welcome_message,
+        showSongRequest: data.show_song_request ?? true,
+        showDietaryNotes: data.show_dietary_notes ?? true,
       });
     }
   };
@@ -101,6 +105,8 @@ export default function HomePage() {
           eventDate={eventData.eventDate}
           venueName={eventData.venueName}
           venueAddress={eventData.venueAddress}
+          showSongRequest={eventData.showSongRequest}
+          showDietaryNotes={eventData.showDietaryNotes}
         />
 
         <GiftRegistry
