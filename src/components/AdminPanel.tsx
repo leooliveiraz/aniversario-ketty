@@ -201,7 +201,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
   const handleCreateGift = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTitle || !newPrice) return;
+    if (!newTitle) return;
 
     const { error } = await supabase.from("gifts").insert({
       title: newTitle,
@@ -582,8 +582,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <input
                           type="number"
                           step="0.01"
-                          placeholder="Valor (R$) *"
-                          required
+                          placeholder="Valor (R$) — opcional"
                           value={newPrice}
                           onChange={(e) => setNewPrice(e.target.value)}
                           className="bg-[#2b0811] border border-[#D4AF37]/30 rounded-xl px-3 py-2 text-xs text-rose-100"
@@ -596,8 +595,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <option value="Bolsas">Bolsas</option>
                           <option value="Acessórios">Acessórios</option>
                           <option value="Maquiagem">Maquiagem</option>
+                          <option value="Perfumes">Perfumes</option>
                           <option value="Skin Care">Skin Care</option>
                           <option value="Unha">Unha</option>
+                          <option value="Arte & Hobby">Arte & Hobby</option>
                         </select>
                         <input
                           type="url"
