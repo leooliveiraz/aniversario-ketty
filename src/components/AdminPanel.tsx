@@ -18,7 +18,9 @@ import {
   Search,
   KeyRound,
   DollarSign,
+  Image,
 } from "lucide-react";
+import { AdminGallery } from "./AdminGallery";
 
 interface AdminPanelProps {
   isOpen: boolean;
@@ -63,7 +65,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [passcode, setPasscode] = useState("");
   const [passError, setPassError] = useState("");
 
-  const [activeTab, setActiveTab] = useState<"stats" | "rsvps" | "gifts" | "settings">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "rsvps" | "gifts" | "gallery" | "settings">("stats");
 
   // Data
   const [rsvps, setRsvps] = useState<RsvpItem[]>([]);
@@ -402,6 +404,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </button>
 
               <button
+                onClick={() => setActiveTab("gallery")}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-t-xl transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === "gallery"
+                    ? "bg-[#58111a] text-[#D4AF37] border-t-2 border-x border-[#D4AF37]"
+                    : "text-rose-300 hover:text-white"
+                }`}
+              >
+                <Image className="w-4 h-4" /> Galeria
+              </button>
+
+              <button
                 onClick={() => setActiveTab("settings")}
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-t-xl transition-colors cursor-pointer flex items-center gap-1.5 ${
                   activeTab === "settings"
@@ -712,6 +725,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     ))}
                   </div>
                 </div>
+              )}
+
+              {/* GALLERY TAB */}
+              {activeTab === "gallery" && (
+                <AdminGallery />
               )}
 
               {/* SETTINGS TAB */}

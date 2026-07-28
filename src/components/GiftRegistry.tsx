@@ -302,13 +302,18 @@ export const GiftRegistry: React.FC<GiftRegistryProps> = ({
               alt={filteredGifts[lightboxIndex].title}
               className="max-w-full max-h-[75vh] object-contain rounded-2xl shadow-2xl"
             />
-            <div className="text-center">
+            <div className="text-center max-w-lg">
               <h3 className="text-lg font-serif font-bold text-gold-gradient">
                 {filteredGifts[lightboxIndex].title}
               </h3>
               <span className="text-xs text-rose-300 uppercase tracking-wider">
                 {filteredGifts[lightboxIndex].category}
               </span>
+              {filteredGifts[lightboxIndex].description && (
+                <p className="text-sm text-rose-200/80 mt-2 leading-relaxed">
+                  {filteredGifts[lightboxIndex].description}
+                </p>
+              )}
             </div>
           </div>
 
