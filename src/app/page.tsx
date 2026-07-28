@@ -15,7 +15,7 @@ import { supabase } from "@/lib/supabase";
 const defaultEventData = {
   personName: "Ketty",
   age: 15,
-  tagline: "Um Grandioso Baile de Máscaras em Marsala & Ouro",
+  tagline: "Um Grandioso Baile de Máscaras",
   eventDate: "2026-09-25T21:00:00-03:00",
   venueName: "Buffet Ana Jacob & Eventos",
   venueAddress: "Avenida José Carlos Fernandes, 113 - Terras de São João, Jacareí - SP",
