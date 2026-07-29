@@ -22,6 +22,7 @@ import {
   MessageSquare,
   Eye,
   EyeOff,
+  Camera,
 } from "lucide-react";
 import { AdminGallery } from "./AdminGallery";
 
@@ -68,7 +69,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [passcode, setPasscode] = useState("");
   const [passError, setPassError] = useState("");
 
-  const [activeTab, setActiveTab] = useState<"stats" | "rsvps" | "gifts" | "gallery" | "settings" | "messages">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "rsvps" | "gifts" | "gallery" | "settings" | "messages" | "guestphotos">("stats");
 
   interface MessageItem {
     id: number;
@@ -85,6 +86,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [rsvps, setRsvps] = useState<RsvpItem[]>([]);
   const [giftsList, setGiftsList] = useState<GiftItem[]>([]);
   const [messages, setMessages] = useState<MessageItem[]>([]);
+  const [guestPhotos, setGuestPhotos] = useState<{ id: number; senderName: string; imageUrl: string; ipAddress: string; isApproved: boolean; createdAt: string }[]>([]);
   const [searchGuest, setSearchGuest] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -105,6 +107,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [welcomeMessage, setWelcomeMessage] = useState("");
   const [showSongRequest, setShowSongRequest] = useState(true);
   const [showDietaryNotes, setShowDietaryNotes] = useState(true);
+  const [autoApprovePhotos, setAutoApprovePhotos] = useState(true);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Add / Edit Gift Form
@@ -131,11 +134,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      const [rsvpsResult, giftsResult, eventResult, messagesResult] = await Promise.all([
+      const [rsvpsResult, giftsResult, eventResult, messagesResult, guestPhotosResult] = await Promise.all([
         supabase.from("rsvps").select("*").order("id", { ascending: false }),
         supabase.from("gifts").select("*").order("id"),
         supabase.from("event_info").select("*").limit(1).single(),
         supabase.from("guest_messages").select("*").order("created_at", { ascending: false }),
+        supabase.from("guest_photos").select("*").order("created_at", { ascending: false }),
       ]);
 
       if (!rsvpsResult.error && rsvpsResult.data) {
@@ -189,6 +193,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         );
       }
 
+      if (!guestPhotosResult.error && guestPhotosResult.data) {
+        setGuestPhotos(
+          guestPhotosResult.data.map((p) => ({
+            id: p.id,
+            senderName: p.sender_name,
+            imageUrl: p.image_url,
+            ipAddress: p.ip_address,
+            isApproved: p.is_approved,
+            createdAt: p.created_at,
+          }))
+        );
+      }
+
       if (!eventResult.error && eventResult.data) {
         const ev = eventResult.data;
         setPersonName(ev.person_name || "");
@@ -207,6 +224,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setWelcomeMessage(ev.welcome_message || "");
         setShowSongRequest(ev.show_song_request ?? true);
         setShowDietaryNotes(ev.show_dietary_notes ?? true);
+        setAutoApprovePhotos(ev.auto_approve_photos ?? true);
       }
     } catch (err) {
       console.error(err);
@@ -246,6 +264,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       .eq("id", id);
     if (!error) {
       setMessages(messages.map((m) => (m.id === id ? { ...m, isApproved: !current } : m)));
+    }
+  };
+
+  const handleDeleteGuestPhoto = async (id: number, imageUrl: string) => {
+    if (!confirm("Excluir esta foto permanentemente?")) return;
+    const fileName = imageUrl.split("/").pop();
+    await supabase.storage.from("guest_photos").remove([fileName!]);
+    await supabase.from("guest_photos").delete().eq("id", id);
+    setGuestPhotos(guestPhotos.filter((p) => p.id !== id));
+  };
+
+  const handleToggleGuestPhotoVisibility = async (id: number, current: boolean) => {
+    const { error } = await supabase
+      .from("guest_photos")
+      .update({ is_approved: !current })
+      .eq("id", id);
+    if (!error) {
+      setGuestPhotos(guestPhotos.map((p) => (p.id === id ? { ...p, isApproved: !current } : p)));
     }
   };
 
@@ -314,6 +350,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         welcome_message: welcomeMessage,
         show_song_request: showSongRequest,
         show_dietary_notes: showDietaryNotes,
+        auto_approve_photos: autoApprovePhotos,
         updated_at: new Date().toISOString(),
       })
       .eq("id", 1);
@@ -470,6 +507,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 }`}
               >
                 <MessageSquare className="w-4 h-4" /> Recados ({messages.length})
+              </button>
+
+              <button
+                onClick={() => setActiveTab("guestphotos")}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-t-xl transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === "guestphotos"
+                    ? "bg-[#58111a] text-[#D4AF37] border-t-2 border-x border-[#D4AF37]"
+                    : "text-rose-300 hover:text-white"
+                }`}
+              >
+                <Camera className="w-4 h-4" /> Fotos Convidados ({guestPhotos.length})
               </button>
 
               <button
@@ -854,6 +902,77 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 </div>
               )}
 
+              {/* GUEST PHOTOS TAB */}
+              {activeTab === "guestphotos" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-serif font-bold text-gold-gradient">
+                      Fotos Enviadas por Convidados ({guestPhotos.length})
+                    </h4>
+                  </div>
+
+                  <div className="space-y-2">
+                    {guestPhotos.map((p) => (
+                      <div
+                        key={p.id}
+                        className={`p-4 rounded-2xl border flex items-start justify-between gap-4 ${
+                          p.isApproved
+                            ? "bg-[#1a060b] border-[#D4AF37]/30"
+                            : "bg-[#1a060b]/50 border-rose-800/50 opacity-70"
+                        }`}
+                      >
+                        <div className="flex items-start gap-4 min-w-0 flex-1">
+                          <img
+                            src={p.imageUrl}
+                            alt=""
+                            className="w-16 h-16 rounded-xl object-cover shrink-0 border border-[#D4AF37]/30"
+                          />
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-serif font-bold text-rose-100">{p.senderName}</span>
+                              {!p.isApproved && (
+                                <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-bold bg-rose-950 text-rose-300 border border-rose-500">
+                                  Oculta
+                                </span>
+                              )}
+                            </div>
+                            {p.ipAddress && p.ipAddress !== "unknown" && (
+                              <p className="text-[10px] text-rose-400">IP: {p.ipAddress}</p>
+                            )}
+                            <p className="text-[10px] text-rose-400">
+                              {new Date(p.createdAt).toLocaleString("pt-BR")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => handleToggleGuestPhotoVisibility(p.id, p.isApproved)}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              p.isApproved
+                                ? "text-amber-400 hover:bg-amber-900/40"
+                                : "text-rose-400 hover:bg-rose-900/40"
+                            }`}
+                            title={p.isApproved ? "Ocultar foto" : "Exibir foto"}
+                          >
+                            {p.isApproved ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGuestPhoto(p.id, p.imageUrl)}
+                            className="p-1.5 text-rose-400 hover:text-rose-200 rounded-lg hover:bg-rose-900/40 cursor-pointer"
+                            title="Excluir foto"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {guestPhotos.length === 0 && (
+                      <p className="text-center text-xs text-rose-400 py-8">Nenhuma foto enviada ainda.</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* SETTINGS TAB */}
               {activeTab === "settings" && (
                 <form onSubmit={handleSaveSettings} className="space-y-4">
@@ -986,6 +1105,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <span className="text-xs text-rose-200">Exibir campo "Restrição Alimentar"</span>
                       </label>
                     </div>
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#1a060b] border border-[#D4AF37]/30 space-y-4">
+                    <h4 className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">
+                      Galeria de Fotos dos Convidados
+                    </h4>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <div
+                        onClick={() => setAutoApprovePhotos(!autoApprovePhotos)}
+                        className={`w-10 h-5 rounded-full transition-colors relative ${
+                          autoApprovePhotos ? "bg-emerald-600" : "bg-rose-800"
+                        }`}
+                      >
+                        <div
+                          className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${
+                            autoApprovePhotos ? "left-[22px]" : "left-0.5"
+                          }`}
+                        />
+                      </div>
+                      <span className="text-xs text-rose-200">
+                        {autoApprovePhotos
+                          ? "Aprovação automática: fotos aparecem imediatamente"
+                          : "Aprovação manual: fotos precisam ser aprovadas no painel"}
+                      </span>
+                    </label>
                   </div>
 
                   {saveSuccess && (

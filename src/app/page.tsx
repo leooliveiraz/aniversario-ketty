@@ -8,6 +8,7 @@ import { RsvpForm } from "@/components/RsvpForm";
 import { GiftRegistry } from "@/components/GiftRegistry";
 import { MessageBoard } from "@/components/MessageBoard";
 import { PhotoGallery } from "@/components/PhotoGallery";
+import { GuestPhotos } from "@/components/GuestPhotos";
 import { Footer } from "@/components/Footer";
 import { AdminPanel } from "@/components/AdminPanel";
 import { supabase } from "@/lib/supabase";
@@ -121,6 +122,8 @@ export default function HomePage() {
         />
 
         <MessageBoard />
+
+        <GuestPhotos />
 
         <PhotoGallery personName={eventData.personName} />
       </main>
