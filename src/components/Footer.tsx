@@ -23,7 +23,7 @@ export const Footer: React.FC<FooterProps> = ({ personName, age, onOpenAdmin }) 
                 Baile de Máscaras da {personName}
               </span>
               <span className="text-[10px] uppercase tracking-widest text-rose-300">
-                Celebração Inesquecível dos {age} Anos • Marsala & Ouro
+                Celebração Inesquecível dos {age} Anos
               </span>
             </div>
           </div>

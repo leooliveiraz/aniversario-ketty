@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Baile de Máscaras - 15 Anos | Festa Marsala & Ouro",
+  title: "Baile de Máscaras - 15 Anos",
   description: "Venha celebrar o inesquecível Baile de Máscaras em tom Marsala. Confirme sua presença e confira a lista de presentes!",
 };
 
