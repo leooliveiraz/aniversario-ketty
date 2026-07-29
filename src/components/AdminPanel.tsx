@@ -19,6 +19,9 @@ import {
   KeyRound,
   DollarSign,
   Image,
+  MessageSquare,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { AdminGallery } from "./AdminGallery";
 
@@ -65,11 +68,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [passcode, setPasscode] = useState("");
   const [passError, setPassError] = useState("");
 
-  const [activeTab, setActiveTab] = useState<"stats" | "rsvps" | "gifts" | "gallery" | "settings">("stats");
+  const [activeTab, setActiveTab] = useState<"stats" | "rsvps" | "gifts" | "gallery" | "settings" | "messages">("stats");
+
+  interface MessageItem {
+    id: number;
+    senderName: string;
+    relationship: string;
+    message: string;
+    maskStyle: string;
+    likes: number;
+    isApproved: boolean;
+    createdAt: string;
+  }
 
   // Data
   const [rsvps, setRsvps] = useState<RsvpItem[]>([]);
   const [giftsList, setGiftsList] = useState<GiftItem[]>([]);
+  const [messages, setMessages] = useState<MessageItem[]>([]);
   const [searchGuest, setSearchGuest] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -116,10 +131,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      const [rsvpsResult, giftsResult, eventResult] = await Promise.all([
+      const [rsvpsResult, giftsResult, eventResult, messagesResult] = await Promise.all([
         supabase.from("rsvps").select("*").order("id", { ascending: false }),
         supabase.from("gifts").select("*").order("id"),
         supabase.from("event_info").select("*").limit(1).single(),
+        supabase.from("guest_messages").select("*").order("created_at", { ascending: false }),
       ]);
 
       if (!rsvpsResult.error && rsvpsResult.data) {
@@ -154,6 +170,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             quotaCollected: g.quota_collected || "0.00",
             isReserved: g.is_reserved,
             reservedByName: g.reserved_by_name,
+          }))
+        );
+      }
+
+      if (!messagesResult.error && messagesResult.data) {
+        setMessages(
+          messagesResult.data.map((m) => ({
+            id: m.id,
+            senderName: m.sender_name,
+            relationship: m.relationship,
+            message: m.message,
+            maskStyle: m.mask_style,
+            likes: m.likes,
+            isApproved: m.is_approved,
+            createdAt: m.created_at,
           }))
         );
       }
@@ -200,6 +231,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     if (!confirm("Tem certeza que deseja remover este presente?")) return;
     await supabase.from("gifts").delete().eq("id", id);
     setGiftsList(giftsList.filter((g) => g.id !== id));
+  };
+
+  const handleDeleteMessage = async (id: number) => {
+    if (!confirm("Excluir este recado permanentemente?")) return;
+    await supabase.from("guest_messages").delete().eq("id", id);
+    setMessages(messages.filter((m) => m.id !== id));
+  };
+
+  const handleToggleMessageVisibility = async (id: number, current: boolean) => {
+    const { error } = await supabase
+      .from("guest_messages")
+      .update({ is_approved: !current })
+      .eq("id", id);
+    if (!error) {
+      setMessages(messages.map((m) => (m.id === id ? { ...m, isApproved: !current } : m)));
+    }
   };
 
   const handleStartEditGift = (g: GiftItem) => {
@@ -412,6 +459,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 }`}
               >
                 <Image className="w-4 h-4" /> Galeria
+              </button>
+
+              <button
+                onClick={() => setActiveTab("messages")}
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-t-xl transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  activeTab === "messages"
+                    ? "bg-[#58111a] text-[#D4AF37] border-t-2 border-x border-[#D4AF37]"
+                    : "text-rose-300 hover:text-white"
+                }`}
+              >
+                <MessageSquare className="w-4 h-4" /> Recados ({messages.length})
               </button>
 
               <button
@@ -730,6 +788,70 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               {/* GALLERY TAB */}
               {activeTab === "gallery" && (
                 <AdminGallery />
+              )}
+
+              {/* MESSAGES TAB */}
+              {activeTab === "messages" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-serif font-bold text-gold-gradient">
+                      Recados do Mural ({messages.length})
+                    </h4>
+                  </div>
+
+                  <div className="space-y-2">
+                    {messages.map((m) => (
+                      <div
+                        key={m.id}
+                        className={`p-4 rounded-2xl border flex items-start justify-between gap-4 ${
+                          m.isApproved
+                            ? "bg-[#1a060b] border-[#D4AF37]/30"
+                            : "bg-[#1a060b]/50 border-rose-800/50 opacity-70"
+                        }`}
+                      >
+                        <div className="space-y-1.5 min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-serif font-bold text-rose-100">{m.senderName}</span>
+                            <span className="text-[10px] text-[#D4AF37] uppercase">{m.relationship}</span>
+                            {!m.isApproved && (
+                              <span className="px-2 py-0.5 rounded-full text-[9px] uppercase font-bold bg-rose-950 text-rose-300 border border-rose-500">
+                                Oculta
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-rose-200/80 italic line-clamp-2">{m.message}</p>
+                          <div className="flex items-center gap-3 text-[10px] text-rose-400">
+                            <span>{new Date(m.createdAt).toLocaleDateString("pt-BR")}</span>
+                            <span>❤️ {m.likes}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => handleToggleMessageVisibility(m.id, m.isApproved)}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                              m.isApproved
+                                ? "text-amber-400 hover:bg-amber-900/40"
+                                : "text-rose-400 hover:bg-rose-900/40"
+                            }`}
+                            title={m.isApproved ? "Ocultar recado" : "Exibir recado"}
+                          >
+                            {m.isApproved ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                          <button
+                            onClick={() => handleDeleteMessage(m.id)}
+                            className="p-1.5 text-rose-400 hover:text-rose-200 rounded-lg hover:bg-rose-900/40 cursor-pointer"
+                            title="Excluir recado"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    {messages.length === 0 && (
+                      <p className="text-center text-xs text-rose-400 py-8">Nenhum recado recebido ainda.</p>
+                    )}
+                  </div>
+                </div>
               )}
 
               {/* SETTINGS TAB */}
