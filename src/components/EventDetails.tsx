@@ -8,7 +8,6 @@ import {
   Shirt,
   Sparkles,
   CalendarPlus,
-  ExternalLink,
   Crown,
   CheckCircle2,
 } from "lucide-react";
@@ -18,7 +17,6 @@ interface EventDetailsProps {
   eventDate: string;
   venueName: string;
   venueAddress: string;
-  mapUrl: string;
   dressCodeTitle: string;
   dressCodeDesc: string;
 }
@@ -28,7 +26,6 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
   eventDate,
   venueName,
   venueAddress,
-  mapUrl,
   dressCodeTitle,
   dressCodeDesc,
 }) => {
@@ -116,15 +113,26 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
               <p className="text-xs text-rose-200/80 leading-relaxed">{venueAddress}</p>
             </div>
 
-            <a
-              href={mapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 w-full py-2.5 px-4 text-xs font-bold uppercase tracking-wider text-rose-100 bg-[#58111a] hover:bg-[#7A1C28] border border-[#D4AF37]/40 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer text-center"
-            >
-              <ExternalLink className="w-4 h-4 text-[#D4AF37]" />
-              Ver no Google Maps
-            </a>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${venueName}, ${venueAddress}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-3 text-xs font-bold uppercase tracking-wider text-rose-100 bg-[#58111a] hover:bg-[#7A1C28] border border-[#D4AF37]/40 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+              >
+                <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                Google Maps
+              </a>
+              <a
+                href={`https://www.waze.com/ul?q=${encodeURIComponent(`${venueName}, ${venueAddress}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2.5 px-3 text-xs font-bold uppercase tracking-wider text-rose-100 bg-[#58111a] hover:bg-[#7A1C28] border border-[#D4AF37]/40 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer text-center"
+              >
+                <MapPin className="w-4 h-4 text-[#D4AF37]" />
+                Waze
+              </a>
+            </div>
           </div>
 
           {/* Dress Code Card */}

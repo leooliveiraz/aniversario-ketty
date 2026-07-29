@@ -100,7 +100,6 @@ export default function HomePage() {
           eventDate={eventData.eventDate}
           venueName={eventData.venueName}
           venueAddress={eventData.venueAddress}
-          mapUrl={eventData.mapUrl}
           dressCodeTitle={eventData.dressCodeTitle}
           dressCodeDesc={eventData.dressCodeDesc}
         />
