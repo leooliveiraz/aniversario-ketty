@@ -96,13 +96,20 @@ export const GuestPhotos: React.FC = () => {
       const { data: urlData } = supabase.storage.from("guest_photos").getPublicUrl(path);
       const imageUrl = urlData.publicUrl;
 
-      const res = await fetch("/api/guest-photos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senderName: senderName.trim(), imageUrl, isApproved: autoApprove }),
-      });
+      let ip = "unknown";
+      try {
+        const ipRes = await fetch("https://api.ipify.org?format=json");
+        const ipData = await ipRes.json();
+        if (ipData.ip) ip = ipData.ip;
+      } catch {}
 
-      if (!res.ok) throw new Error("Erro ao salvar");
+      const { error: dbError } = await supabase.from("guest_photos").insert({
+        sender_name: senderName.trim(),
+        image_url: imageUrl,
+        ip_address: ip,
+        is_approved: autoApprove,
+      });
+      if (dbError) throw dbError;
 
       setSenderName("");
       setFile(null);
