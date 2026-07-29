@@ -108,6 +108,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showSongRequest, setShowSongRequest] = useState(true);
   const [showDietaryNotes, setShowDietaryNotes] = useState(true);
   const [autoApprovePhotos, setAutoApprovePhotos] = useState(true);
+  const [adminPasscode, setAdminPasscode] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Add / Edit Gift Form
@@ -120,14 +121,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [newImage, setNewImage] = useState("");
   const [newIsQuota, setNewIsQuota] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const checkPasscode = async () => {
+    const { data } = await supabase.from("event_info").select("admin_passcode").limit(1).single();
+    const stored = data?.admin_passcode;
+    if (stored) {
+      if (passcode === stored) return true;
+      return false;
+    }
+    return passcode === "marsala15" || passcode === "1234" || passcode === "admin";
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (passcode === "marsala15" || passcode === "1234" || passcode === "admin") {
+    const ok = await checkPasscode();
+    if (ok) {
       setIsAuthenticated(true);
       setPassError("");
       loadAdminData();
     } else {
-      setPassError("Senha incorreta. Dica: use 'marsala15' ou '1234'");
+      setPassError("Senha incorreta.");
     }
   };
 
@@ -225,6 +237,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setShowSongRequest(ev.show_song_request ?? true);
         setShowDietaryNotes(ev.show_dietary_notes ?? true);
         setAutoApprovePhotos(ev.auto_approve_photos ?? true);
+        setAdminPasscode(ev.admin_passcode || "");
       }
     } catch (err) {
       console.error(err);
@@ -351,6 +364,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         show_song_request: showSongRequest,
         show_dietary_notes: showDietaryNotes,
         auto_approve_photos: autoApprovePhotos,
+        admin_passcode: adminPasscode || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", 1);
@@ -435,7 +449,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
             <input
               type="password"
-              placeholder="Digite a senha (padrão: marsala15)"
+              placeholder="Digite a senha do painel"
               value={passcode}
               onChange={(e) => setPasscode(e.target.value)}
               className="w-full bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-4 py-2.5 text-center text-sm text-rose-100 focus:outline-none focus:border-[#D4AF37]"
@@ -1066,6 +1080,38 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                       onChange={(e) => setWelcomeMessage(e.target.value)}
                       className="w-full bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-3 py-2 text-xs text-rose-100"
                     />
+                  </div>
+
+                  <div className="p-4 rounded-2xl bg-[#1a060b] border border-[#D4AF37]/30 space-y-4">
+                    <h4 className="text-xs font-bold text-[#D4AF37] uppercase tracking-wider">
+                      Segurança do Painel
+                    </h4>
+                    <div className="space-y-1">
+                      <label className="text-xs text-rose-200">
+                        Senha do Painel Administrativo {adminPasscode ? "(personalizada definida)" : "(padrão: marsala15)"}
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Nova senha"
+                          value={adminPasscode}
+                          onChange={(e) => setAdminPasscode(e.target.value)}
+                          className="flex-1 bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-3 py-2 text-xs text-rose-100"
+                        />
+                        {adminPasscode && (
+                          <button
+                            type="button"
+                            onClick={() => setAdminPasscode("")}
+                            className="px-3 py-2 text-xs text-rose-400 hover:text-white bg-[#1a060b] border border-rose-800 rounded-xl cursor-pointer"
+                          >
+                            Remover
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-rose-400">
+                        Se vazio, usa a senha padrão (marsala15). Preencha e salve para definir uma personalizada.
+                      </p>
+                    </div>
                   </div>
 
                   <div className="p-4 rounded-2xl bg-[#1a060b] border border-[#D4AF37]/30 space-y-4">

@@ -57,3 +57,6 @@ create policy "Authenticated users can manage guest_photos objects"
 
 -- 10. Coluna de configuração: aprovação automática de fotos
 ALTER TABLE event_info ADD COLUMN IF NOT EXISTS auto_approve_photos BOOLEAN DEFAULT true;
+
+-- 11. Coluna de configuração: senha personalizada do painel admin
+ALTER TABLE event_info ADD COLUMN IF NOT EXISTS admin_passcode TEXT;
