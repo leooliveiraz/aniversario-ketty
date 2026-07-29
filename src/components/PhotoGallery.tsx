@@ -79,6 +79,8 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({ personName }) => {
     );
   }
 
+  if (albums.length === 0) return null;
+
   return (
     <section id="galeria" className="py-20 px-4 bg-[#1a060b] relative">
       <div className="max-w-6xl mx-auto space-y-12">

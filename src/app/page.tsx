@@ -34,6 +34,7 @@ const defaultEventData = {
 export default function HomePage() {
   const [eventData, setEventData] = useState(defaultEventData);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [hasGallery, setHasGallery] = useState(true);
 
   const fetchEventData = async () => {
     const { data } = await supabase.from("event_info").select("*").limit(1).single();
@@ -61,6 +62,9 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchEventData();
+    supabase.from("albums").select("id").limit(1).then(({ data }) => {
+      setHasGallery(data && data.length > 0);
+    });
   }, []);
 
   const scrollToRsvp = () => {
@@ -77,6 +81,7 @@ export default function HomePage() {
         age={eventData.age}
         onOpenAdmin={() => setIsAdminOpen(true)}
         onOpenRsvpModal={scrollToRsvp}
+        hideGallery={!hasGallery}
       />
 
       <main>

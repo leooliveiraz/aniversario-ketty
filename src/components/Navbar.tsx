@@ -9,6 +9,7 @@ interface NavbarProps {
   age: number;
   onOpenAdmin: () => void;
   onOpenRsvpModal: () => void;
+  hideGallery?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   age,
   onOpenAdmin,
   onOpenRsvpModal,
+  hideGallery = false,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -25,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { name: "Confirmar Presença", href: "#confirmacao", icon: CalendarCheck },
     { name: "Lista de Presentes", href: "#presentes", icon: Gift },
     { name: "Mural de Recados", href: "#recados", icon: MessageSquare },
-    { name: "Galeria & Traje", href: "#galeria", icon: Image },
+    ...(!hideGallery ? [{ name: "Galeria & Traje", href: "#galeria", icon: Image }] : []),
   ];
 
   return (
