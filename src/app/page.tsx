@@ -63,7 +63,7 @@ export default function HomePage() {
   useEffect(() => {
     fetchEventData();
     supabase.from("albums").select("id").limit(1).then(({ data }) => {
-      setHasGallery(data && data.length > 0);
+      setHasGallery(!!(data && data.length > 0));
     });
   }, []);
 

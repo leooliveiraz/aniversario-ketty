@@ -10,7 +10,6 @@ import {
   CalendarPlus,
   ExternalLink,
   Crown,
-  Music,
   CheckCircle2,
 } from "lucide-react";
 
@@ -47,43 +46,6 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
     hour: "2-digit",
     minute: "2-digit",
   });
-
-  const timelineItems = [
-    {
-      time: "19:30",
-      title: "Recepção de Gala & Tapete Vermelho",
-      desc: "Boas-vindas aos convidados com coquetel de boas-vindas e recepção fotográfica.",
-      isMaskIcon: false,
-      lucideIcon: Sparkles,
-    },
-    {
-      time: "20:30",
-      title: "Banquete Imperial & Música de Ambiente",
-      desc: "Jantar especial servido aos convidados no Salão Nobre.",
-      isMaskIcon: false,
-      lucideIcon: Crown,
-    },
-    {
-      time: "21:30",
-      title: "Entrada Triunfal da Aniversariante & Valsa",
-      desc: "O momento mágico da valsa dos 15 anos com máscaras e homenagem dos padrinhos.",
-      isMaskIcon: true,
-    },
-    {
-      time: "22:30",
-      title: "Abertura Oficial da Pista de Dança",
-      desc: "DJ ao vivo, luzes temáticas e início da balada misteriosa.",
-      isMaskIcon: false,
-      lucideIcon: Music,
-    },
-    {
-      time: "01:00",
-      title: "Lanchinho da Madrugada & Surpresas VIP",
-      desc: "Gastronomia afetiva para renovar a energia e surpresas até o amanhecer.",
-      isMaskIcon: false,
-      lucideIcon: Sparkles,
-    },
-  ];
 
   const handleAddToCalendar = () => {
     const startDate = new Date(eventDate);
@@ -215,52 +177,7 @@ export const EventDetails: React.FC<EventDetailsProps> = ({
           </div>
         </div>
 
-        {/* Timeline of the Event */}
-        <div className="space-y-8">
-          <div className="text-center">
-            <h3 className="text-2xl font-serif font-bold text-gold-gradient">
-              Cronograma do Gran Baile
-            </h3>
-            <p className="text-xs text-rose-300 mt-1">Siga a programação para não perder nenhum instante especial</p>
-          </div>
 
-          <div className="relative border-l-2 border-[#D4AF37]/40 ml-4 md:ml-32 space-y-8 py-2">
-            {timelineItems.map((item, idx) => {
-              const LucideIcon = item.lucideIcon;
-              return (
-                <div key={idx} className="relative pl-6 sm:pl-8 group">
-                  {/* Timeline bullet */}
-                  <div className="absolute -left-[11px] top-1 w-5 h-5 rounded-full bg-[#7A1C28] border-2 border-[#D4AF37] flex items-center justify-center text-[10px] text-[#D4AF37] group-hover:scale-125 transition-transform">
-                    ★
-                  </div>
-
-                  <div className="marsala-glass p-5 rounded-2xl border border-[#D4AF37]/20 group-hover:border-[#D4AF37]/60 transition-all">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                      <div className="flex items-center gap-3">
-                        <span className="px-3 py-1 rounded-full bg-[#58111a] border border-[#D4AF37]/30 text-xs font-bold text-[#D4AF37]">
-                          {item.time}
-                        </span>
-                        <h4 className="text-base sm:text-lg font-serif font-bold text-rose-100">
-                          {item.title}
-                        </h4>
-                      </div>
-                      <div className="text-amber-300/80">
-                        {item.isMaskIcon ? (
-                          <VenetianMaskSvg variant="gold" className="w-6 h-6" />
-                        ) : LucideIcon ? (
-                          <LucideIcon className="w-5 h-5" />
-                        ) : null}
-                      </div>
-                    </div>
-                    <p className="text-xs sm:text-sm text-rose-200/80 leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
       </div>
     </section>
   );
