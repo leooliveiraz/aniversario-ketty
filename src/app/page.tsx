@@ -30,6 +30,7 @@ const defaultEventData = {
   welcomeMessage: "É com imenso carinho e alegria que convido você para compartilhar comigo a celebração mágica do meu aniversário de 15 anos em um misterioso e inesquecível Baile de Máscaras!",
   showSongRequest: true,
   showDietaryNotes: true,
+  rsvpDeadline: "",
 };
 
 export default function HomePage() {
@@ -57,6 +58,7 @@ export default function HomePage() {
         welcomeMessage: data.welcome_message,
         showSongRequest: data.show_song_request ?? true,
         showDietaryNotes: data.show_dietary_notes ?? true,
+        rsvpDeadline: data.rsvp_deadline ?? "",
       });
     }
   };
@@ -112,6 +114,7 @@ export default function HomePage() {
           venueAddress={eventData.venueAddress}
           showSongRequest={eventData.showSongRequest}
           showDietaryNotes={eventData.showDietaryNotes}
+          rsvpDeadline={eventData.rsvpDeadline}
         />
 
         <GiftRegistry

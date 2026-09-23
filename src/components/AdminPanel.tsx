@@ -60,6 +60,14 @@ interface GiftItem {
   reservedByName?: string;
 }
 
+const toDatetimeLocal = (value: string) => {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value.slice(0, 16);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 export const AdminPanel: React.FC<AdminPanelProps> = ({
   isOpen,
   onClose,
@@ -109,6 +117,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [showDietaryNotes, setShowDietaryNotes] = useState(true);
   const [autoApprovePhotos, setAutoApprovePhotos] = useState(true);
   const [adminPasscode, setAdminPasscode] = useState("");
+  const [rsvpDeadline, setRsvpDeadline] = useState("");
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Add / Edit Gift Form
@@ -238,6 +247,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         setShowDietaryNotes(ev.show_dietary_notes ?? true);
         setAutoApprovePhotos(ev.auto_approve_photos ?? true);
         setAdminPasscode(ev.admin_passcode || "");
+        setRsvpDeadline(ev.rsvp_deadline ? toDatetimeLocal(ev.rsvp_deadline) : "");
       }
     } catch (err) {
       console.error(err);
@@ -365,6 +375,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         show_dietary_notes: showDietaryNotes,
         auto_approve_photos: autoApprovePhotos,
         admin_passcode: adminPasscode || null,
+        rsvp_deadline: rsvpDeadline || null,
         updated_at: new Date().toISOString(),
       })
       .eq("id", 1);
@@ -1150,6 +1161,32 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         </div>
                         <span className="text-xs text-rose-200">Exibir campo "Restrição Alimentar"</span>
                       </label>
+                    </div>
+
+                    <div className="space-y-1 pt-2 border-t border-[#D4AF37]/20">
+                      <label className="text-xs text-rose-200">
+                        Encerrar confirmações a partir de (data e hora)
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="datetime-local"
+                          value={rsvpDeadline}
+                          onChange={(e) => setRsvpDeadline(e.target.value)}
+                          className="flex-1 bg-[#1a060b] border border-[#D4AF37]/40 rounded-xl px-3 py-2 text-xs text-rose-100"
+                        />
+                        {rsvpDeadline && (
+                          <button
+                            type="button"
+                            onClick={() => setRsvpDeadline("")}
+                            className="px-3 py-2 text-xs text-rose-400 hover:text-white bg-[#1a060b] border border-rose-800 rounded-xl cursor-pointer"
+                          >
+                            Remover
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-[10px] text-rose-400">
+                        A partir desta data e hora ninguém mais poderá enviar novas confirmações. Deixe vazio para aceitar confirmações sem prazo.
+                      </p>
                     </div>
                   </div>
 

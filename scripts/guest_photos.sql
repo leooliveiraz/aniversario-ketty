@@ -60,3 +60,6 @@ ALTER TABLE event_info ADD COLUMN IF NOT EXISTS auto_approve_photos BOOLEAN DEFA
 
 -- 11. Coluna de configuração: senha personalizada do painel admin
 ALTER TABLE event_info ADD COLUMN IF NOT EXISTS admin_passcode TEXT;
+
+-- 12. Coluna de configuração: data-limite para aceitar confirmações (a partir dela, o formulário é encerrado)
+ALTER TABLE event_info ADD COLUMN IF NOT EXISTS rsvp_deadline TIMESTAMPTZ;

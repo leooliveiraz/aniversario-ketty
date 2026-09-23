@@ -18,6 +18,7 @@ import {
   Share2,
   XCircle,
   Sparkles,
+  Lock,
 } from "lucide-react";
 
 interface RsvpFormProps {
@@ -27,6 +28,7 @@ interface RsvpFormProps {
   venueAddress: string;
   showSongRequest?: boolean;
   showDietaryNotes?: boolean;
+  rsvpDeadline?: string;
   isOpenModal?: boolean;
   onCloseModal?: () => void;
 }
@@ -38,6 +40,7 @@ export const RsvpForm: React.FC<RsvpFormProps> = ({
   venueAddress,
   showSongRequest = true,
   showDietaryNotes = true,
+  rsvpDeadline = "",
 }) => {
   const [guestName, setGuestName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,8 +63,22 @@ export const RsvpForm: React.FC<RsvpFormProps> = ({
     childCount: number;
   } | null>(null);
 
+  const isRsvpClosed = rsvpDeadline ? new Date() >= new Date(rsvpDeadline) : false;
+
+  const deadlineFormatted = rsvpDeadline
+    ? new Date(rsvpDeadline).toLocaleDateString("pt-BR", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRsvpClosed) {
+      setErrorMessage("O prazo para confirmações foi encerrado.");
+      return;
+    }
     if (!guestName.trim()) {
       setErrorMessage("Por favor, preencha seu nome completo.");
       return;
@@ -174,8 +191,10 @@ export const RsvpForm: React.FC<RsvpFormProps> = ({
             Confirme sua Presença no Baile
           </h2>
           <p className="text-sm sm:text-base text-rose-200/80 max-w-xl mx-auto">
-            Sua presença tornará a noite da {personName} ainda mais inesquecível.
-            Por favor, confirme até 15 dias antes do evento.
+            Sua presença tornará a noite da {personName} ainda mais inesquecível.{" "}
+            {rsvpDeadline
+              ? `Por favor, confirme até ${deadlineFormatted}.`
+              : "Por favor, confirme até 15 dias antes do evento."}
           </p>
         </div>
 
@@ -285,6 +304,26 @@ export const RsvpForm: React.FC<RsvpFormProps> = ({
                 </button>
               </div>
             )}
+          </div>
+        ) : isRsvpClosed ? (
+          <div className="marsala-glass border-2 border-[#D4AF37] p-6 sm:p-10 rounded-3xl space-y-6 shadow-2xl text-center animate-fadeIn">
+            <div className="w-16 h-16 rounded-full bg-[#58111a] border-2 border-[#D4AF37] text-[#D4AF37] flex items-center justify-center mx-auto shadow-lg">
+              <Lock className="w-8 h-8" />
+            </div>
+            <div className="space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[#D4AF37]">
+                Confirmações Encerradas
+              </span>
+              <h3 className="text-2xl sm:text-3xl font-serif font-bold text-rose-100">
+                O prazo para confirmar presença foi encerrado
+              </h3>
+              <p className="text-sm text-rose-200/80 max-w-md mx-auto">
+                {deadlineFormatted
+                  ? `As confirmações foram aceitas até ${deadlineFormatted}.`
+                  : "As confirmações estão encerradas."}{" "}
+                Em caso de dúvidas, entre em contato com a organização do evento.
+              </p>
+            </div>
           </div>
         ) : (
           <form
